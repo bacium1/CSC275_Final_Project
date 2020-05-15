@@ -1,49 +1,60 @@
-######################################## 
-# CSC 275 Final Project Shiny App Code #
-########## Miruna Baciu ################
-########################################
+### CSC 275 Final Project ### 
+####### Miruna Baciu ########
 
+library(dplyr)
+library(lubridate)
+library(ggplot2)
 library(shiny)
 
-# This defines the UI
+#listings <- read.csv("listings.csv")
+#lt_listing <- listings %>%
+#   filter(minimum_nights >= 14)
+#min_price <- min(lt_listing$price)
+#max_price <- max(lt_listing$price)
+
 ui <- fluidPage(
-    
-    titlePanel("Evolution of the Wage Gap According to Major from 2014-2018"),
+    # Application title
+    titlePanel("Most Reviewed Long-Term Paris Airbnb's"),
     
     sidebarLayout(
         sidebarPanel(
-            selectInput(inputId = "major", label = "Academic Major",
-                        choices = unique(salary2014$major), 
-                        selected = NULL, multiple = TRUE)
+            sliderInput("range",
+                        "Airbnb Price",
+                        min = min_price,
+                        max = max_price,
+                        value = 10)
         ),
-
+        
+        
         mainPanel(
-           plotOutput(outputId = "wageGapPlot")
+            plotOutput("revPlot")
         )
     )
 )
 
-server <- function(input, output) {
 
-    output$wageGapPlot <- renderPlot({
-        saraly2014 <- read.csv("cscsalary2014.csv")
-        saraly2015 <- read.csv("cscsalary2015.csv")
-        saraly2016 <- read.csv("cscsalary2016.csv")
-        saraly2017 <- read.csv("cscsalary2017.csv")
-        saraly2018 <- read.csv("cscsalary2018.csv")
-        colnames(salary2014)[1] <- "Major"
-        colnames(salary2015)[1] <- "Major"
-        colnames(salary2016)[1] <- "Major"
-        colnames(salary2017)[1] <- "Major"
-        colnames(salary2018)[1] <- "Major"
-        salary2014$WageGap <- (salary2014$Male - salary2014$Female)
-        salary2015$WageGap <- (salary2015$Male - salary2015$Female)
-        salary2016$WageGap <- (salary2016$Male - salary2016$Female)
-        salary2017$WageGap <- (salary2017$Male - salary2017$Female)
-        salary2018$WageGap <- (salary2018$Male - salary2018$Female)
+server <- function(input, output) {
+    
+    output$revPlot <- renderPlot({
         
+        listings <- read.csv("listings.csv")
+        lt_listing <- listings %>%
+            filter(minimum_nights >= 14)
+        min_price <- min(lt_listing$price)
+        max_price <- max(lt_listing$price)
+        top_reviews <- lt_listing %>%
+            filter(price >= input$range[1] &
+                       price <= input$range[2]) %>%
+            #count(number_of_reviews) %>%
+            #arrange(desc(n)) %>%
+            head(10)
+        
+        ggplot(top_reviews, aes(x=name, y=number_of_reviews, fill=neighborhood)) + 
+            geom_bar(stat="identity") +
+            theme(axis.text.x=element_text(angle=60, hjust=1)) +
+            labs(x="Name of Airbnb", y="Number of Reviews", fill="Name of Neighborhood")
     })
 }
 
-
+# Run the application 
 shinyApp(ui = ui, server = server)
