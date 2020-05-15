@@ -6,11 +6,11 @@ library(lubridate)
 library(ggplot2)
 library(shiny)
 
-#listings <- read.csv("listings.csv")
-#lt_listing <- listings %>%
-#   filter(minimum_nights >= 14)
-#min_price <- min(lt_listing$price)
-#max_price <- max(lt_listing$price)
+listings <- read.csv("listings.csv")
+lt_listing <- listings %>%
+   filter(minimum_nights >= 14)
+min_price <- min(lt_listing$price)
+max_price <- max(lt_listing$price)
 
 ui <- fluidPage(
     # Application title
@@ -36,22 +36,16 @@ ui <- fluidPage(
 server <- function(input, output) {
     
     output$revPlot <- renderPlot({
-        
-        listings <- read.csv("listings.csv")
-        lt_listing <- listings %>%
-            filter(minimum_nights >= 14)
-        min_price <- min(lt_listing$price)
-        max_price <- max(lt_listing$price)
         top_reviews <- lt_listing %>%
-            filter(price >= input$range[1] &
-                       price <= input$range[2]) %>%
+            filter(#price >= input$range[1] &
+                       price <= input$range[1]) %>%
             #count(number_of_reviews) %>%
             #arrange(desc(n)) %>%
             head(10)
         
-        ggplot(top_reviews, aes(x=name, y=number_of_reviews, fill=neighborhood)) + 
+        ggplot(top_reviews, aes(x=name, y=number_of_reviews, fill=neighbourhood)) + 
             geom_bar(stat="identity") +
-            theme(axis.text.x=element_text(angle=60, hjust=1)) +
+            theme(axis.text.x=element_text(angle=30, hjust=1)) +
             labs(x="Name of Airbnb", y="Number of Reviews", fill="Name of Neighborhood")
     })
 }
