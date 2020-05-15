@@ -24,8 +24,6 @@ ui <- fluidPage(
                         max = max_price,
                         value = 10)
         ),
-        
-        
         mainPanel(
             plotOutput("revPlot")
         )
@@ -39,11 +37,14 @@ server <- function(input, output) {
         top_reviews <- lt_listing %>%
             filter(#price >= input$range[1] &
                        price <= input$range[1]) %>%
-            #count(number_of_reviews) %>%
-            #arrange(desc(n)) %>%
-            head(10)
+            group_by(name) %>%
+            summarize(max_review=max(number_of_reviews)) %>%
+            arrange(desc(max_review)) %>%
+            head(10) %>%
+            ungroup()
+        joined_reviews <- inner_join(lt_listing, top_reviews, by="name")
         
-        ggplot(top_reviews, aes(x=name, y=number_of_reviews, fill=neighbourhood)) + 
+        ggplot(joined_reviews, aes(x=name, y=number_of_reviews, fill=neighbourhood)) + 
             geom_bar(stat="identity") +
             theme(axis.text.x=element_text(angle=30, hjust=1)) +
             labs(x="Name of Airbnb", y="Number of Reviews", fill="Name of Neighborhood")
